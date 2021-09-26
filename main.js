@@ -7,7 +7,7 @@ const readline = require('readline');
 // use the readline module to print out to the command line
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 // creates and empty "board" for the user to see where marks can be placed.
@@ -15,12 +15,38 @@ const rl = readline.createInterface({
 let board = [
   [' ', ' ', ' '],
   [' ', ' ', ' '],
-  [' ', ' ', ' ']
+  [' ', ' ', ' '],
 ];
 
 // assigns the first mark as 'X'
+let currentMarker = 'X';
+const handleClick = (element) => {
+  console.log(`The element you clicked on has an id:  ${element.id}`);
+  if (!document.getElementById(element.id).innerHTML) {
+    addMarker(element.id);
+  }
+};
+
+const addMarker = (id) => {
+  const row = parseInt(id.charAt(0));
+  const column = parseInt(id.charAt(2));
+  board[row][column] = currentMarker;
+  console.log(`*** The current marker is:  ${currentMarker}. ***`);
+  console.log(
+    `Therefore, a  "${currentMarker}"  should be placed in the square with the id:  ${id}`
+  );
+  document.getElementById(id).innerHTML = currentMarker;
+  checkForWin();
+};
+
 // using let because the variable is expected to change from 'X' to 'O' and back
-let playerTurn = 'X';
+const changeMarker = () => {
+  if (currentMarker === 'X') {
+    currentMarker = 'O';
+  } else {
+    currentMarker = 'X';
+  }
+};
 
 // is a function that print the current status of the board using the variable - board
 const printBoard = () => {
@@ -30,78 +56,145 @@ const printBoard = () => {
   console.log('1 ' + board[1].join(' | '));
   console.log('  ---------');
   console.log('2 ' + board[2].join(' | '));
-}
+};
 
 const horizontalWin = () => {
   // Your code here to check for horizontal wins
-}
+  if (
+    (board[0][0] == 'X' && board[0][1] == 'X' && board[0][2] == 'X') ||
+    (board[0][0] == 'O' && board[0][1] == 'O' && board[0][2] == 'O') ||
+    (board[1][0] == 'X' && board[1][1] == 'X' && board[1][2] == 'X') ||
+    (board[1][0] == 'O' && board[1][1] == 'O' && board[1][2] == 'O') ||
+    (board[2][0] == 'X' && board[2][1] == 'X' && board[2][2] == 'X') ||
+    (board[2][0] == 'O' && board[2][1] == 'O' && board[2][2] == 'O')
+  ) {
+    return true;
+  }
+};
 
 const verticalWin = () => {
   // Your code here to check for vertical wins
-}
+  if (
+    (board[0][0] == 'X' && board[1][0] == 'X' && board[2][0] == 'X') ||
+    (board[0][0] == 'O' && board[1][0] == 'O' && board[2][0] == 'O') ||
+    (board[0][1] == 'X' && board[1][1] == 'X' && board[2][1] == 'X') ||
+    (board[0][1] == 'O' && board[1][1] == 'O' && board[2][1] == 'O') ||
+    (board[0][2] == 'X' && board[1][2] == 'X' && board[2][2] == 'X') ||
+    (board[0][2] == 'O' && board[1][2] == 'O' && board[2][2] == 'O')
+  ) {
+    return true;
+  }
+};
 
 const diagonalWin = () => {
   // Your code here to check for diagonal wins
-}
+  if (
+    (board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X') ||
+    (board[0][0] == 'O' && board[1][1] == 'O' && board[2][2] == 'O') ||
+    (board[2][0] == 'X' && board[1][1] == 'X' && board[0][2] == 'X') ||
+    (board[2][0] == 'O' && board[1][1] == 'O' && board[0][2] == 'O')
+  ) {
+    return true;
+  }
+};
 
 const checkForWin = () => {
   // Your code here call each of the check for types of wins
-}
+  if (horizontalWin() || verticalWin() || diagonalWin()) {
+    console.log('win');
+    // window.alert(`Player ${currentMarker} won!`)
+    return true;
+  } else {
+    changeMarker();
+  }
+};
 
 const ticTacToe = (row, column) => {
-  // Your code here to place a marker on the board
-  // then check for a win
-}
+  board[row][column] = currentMarker;
+  checkForWin();
+};
+
+const resetBoard = () => {
+  // sanity check: this tells us the function is being called
+  console.log('the board was cleared!');
+
+  // collects all of the "td"s into an HTML Collection: https://www.w3schools.com/jsref/dom_obj_htmlcollection.asp
+  const squares = document.getElementsByTagName('TD');
+
+  // loops over the HTML Collections and clears out the Xs and Os
+  for (i = 0; i < squares.length; i++) {
+    console.log(squares[i]);
+    squares[i].innerHTML = null;
+  }
+
+  // @TODO, Your code here: make sure to reset the array of arrays to empty for a new game
+};
 
 const getPrompt = () => {
   printBoard();
-  console.log("It's Player " + playerTurn + "'s turn.");
+  // console.log("It's Player " + playerTurn + "'s turn.");
   rl.question('row: ', (row) => {
     rl.question('column: ', (column) => {
       ticTacToe(row, column);
       getPrompt();
     });
   });
-}
-
+};
 
 // Unit Tests
 // You use them run the command: npm test main.js
 // to close them ctrl + C
 if (typeof describe === 'function') {
-
   describe('#ticTacToe()', () => {
     it('should place mark on the board', () => {
       ticTacToe(1, 1);
-      assert.deepEqual(board, [ [' ', ' ', ' '], [' ', 'X', ' '], [' ', ' ', ' '] ]);
+      assert.deepEqual(board, [
+        [' ', ' ', ' '],
+        [' ', 'X', ' '],
+        [' ', ' ', ' '],
+      ]);
     });
     it('should alternate between players', () => {
       ticTacToe(0, 0);
-      assert.deepEqual(board, [ ['O', ' ', ' '], [' ', 'X', ' '], [' ', ' ', ' '] ]);
+      assert.deepEqual(board, [
+        ['O', ' ', ' '],
+        [' ', 'X', ' '],
+        [' ', ' ', ' '],
+      ]);
     });
     it('should check for vertical wins', () => {
-      board = [ [' ', 'X', ' '], [' ', 'X', ' '], [' ', 'X', ' '] ];
+      board = [
+        [' ', 'X', ' '],
+        [' ', 'X', ' '],
+        [' ', 'X', ' '],
+      ];
       assert.equal(verticalWin(), true);
     });
     it('should check for horizontal wins', () => {
-      board = [ ['X', 'X', 'X'], [' ', ' ', ' '], [' ', ' ', ' '] ];
+      board = [
+        ['X', 'X', 'X'],
+        [' ', ' ', ' '],
+        [' ', ' ', ' '],
+      ];
       assert.equal(horizontalWin(), true);
     });
     it('should check for diagonal wins', () => {
-      board = [ ['X', ' ', ' '], [' ', 'X', ' '], [' ', ' ', 'X'] ];
+      board = [
+        ['X', ' ', ' '],
+        [' ', 'X', ' '],
+        [' ', ' ', 'X'],
+      ];
       assert.equal(diagonalWin(), true);
     });
     it('should detect a win', () => {
-      ticTacToe(0, 0)
-      ticTacToe(0, 1)
-      ticTacToe(1, 1)
-      ticTacToe(0, 2)
-      ticTacToe(2, 2)
+      ticTacToe(0, 0);
+      ticTacToe(0, 1);
+      ticTacToe(1, 1);
+      ticTacToe(0, 2);
+      ticTacToe(2, 2);
       assert.equal(checkForWin(), true);
     });
   });
 } else {
-
   getPrompt();
-
 }
